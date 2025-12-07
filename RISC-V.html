@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procesador RISC-V - Layout Final Corregido</title>
+    <style src="style.css"></style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">RISC-V Simulator</div>
+        <div class="tabs">
+            <button id="tabEditor" class="tab-btn active" onclick="cambiarPestana('editor')">📝 Editor</button>
+            <button id="tabSim" class="tab-btn disabled" onclick="cambiarPestana('simulator')" disabled>🚀 Simulador</button>
+        </div>
+    </div>
+
+    <div id="viewEditor" class="view-section active-view">
+        <div class="editor-container">
+            <div class="header-tools">
+                <h3>Código Ensamblador</h3>
+                <div class="tools-right">
+                    <label for="fileInput" class="btn-file">📂 Cargar .txt</label>
+                    <input type="file" id="fileInput" accept=".txt" style="display: none;">
+                </div>
+            </div>
+            <textarea id="asmInput" placeholder="Escribe tu código aquí...&#10;Ej: addi x1, x0, 10"></textarea>
+            
+            <div class="editor-actions">
+                <button id="btnLoad" class="btn-primary" onclick="cargarInstrucciones()">
+                    🔨 Ensamblar y Simular
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewSimulator" class="view-section hidden-view">
+        
+        <div class="sim-controls">
+            <button class="btn-secondary" onclick="cambiarPestana('editor')">⬅ Volver</button>
+            
+            <div class="panel-info">
+                <span class="label">Inst:</span> <span id="currentInst" class="value">---</span>
+                <span class="label">PC:</span> <span id="pcValue" class="value">0</span>
+            </div>
+
+            <div class="control-actions">
+                <button id="btnReset" class="btn-reset" onclick="cargarInstrucciones()">
+                    🔄 Reset
+                </button>
+                <button id="btnAuto" class="btn-warning" onclick="toggleAutoPlay()">
+                    ▶ Auto
+                </button>
+
+                <button id="btnRunAll" class="btn-info" onclick="ejecutarTodo()">
+                    ⏩ Run All
+                </button>
+
+                <button id="btnNext" class="btn-success" onclick="siguienteInstruccion()">
+                    Paso ➡
+                </button>
+            </div>
+        </div>
+
+        <div class="schematic-wrapper">
+            <svg viewBox="0 0 1500 850" id="schematic">
+                
+                <defs>
+                    <marker id="arrow" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto" markerUnits="userSpaceOnUse">
+                        <path d="M0,0 L0,5 L5,2.5 z" fill="#546e7a" />
+                    </marker>
+                    <marker id="arrow-c" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto" markerUnits="userSpaceOnUse">
+                        <path d="M0,0 L0,5 L5,2.5 z" fill="#ef6c00" />
+                    </marker>
+                </defs>
+
+                <g transform="translate(50, 150)">
+                    <rect id="mod_mux_pc" width="80" height="90" class="module mod-mux" />
+                    <text x="40" y="55" class="title-mux">Mux</text>
+                    <text x="5" y="25" class="port-in">4</text> 
+                    <text x="5" y="75" class="port-in">Jmp</text>
+                    <text x="65" y="45" class="port-out">Out</text>
+                    <text x="5" y="50" class="port-in">Sel</text>
+                </g>
+
+                <g transform="translate(160, 150)">
+                    <rect id="mod_adder_pc" width="90" height="90" class="module" />
+                    <text x="45" y="55" class="title">Sumador</text>
+                    <text x="5" y="25" class="port-in">Inc</text>
+                    <text x="5" y="75" class="port-in">Addr</text>
+                    <text x="85" y="45" class="port-out">New</text>
+                </g>
+
+                <g transform="translate(160, 320)">
+                    <rect id="mod_pc" width="90" height="100" class="module" />
+                    <text x="45" y="55" class="title">PC</text>
+                    <text x="5" y="25" class="port-in">Addr</text>
+                    <text x="5" y="80" class="port-in">Clk</text>
+                    <text x="85" y="55" class="port-out">Next</text>
+                </g>
+
+                <g transform="translate(320, 250)">
+                    <rect id="mod_mem_instr" width="140" height="220" class="module" />
+                    <text x="70" y="110" class="title">Mem Instr</text>
+                    <text x="5" y="75" class="port-in">Addr</text>
+                    <text x="135" y="30" class="port-out">Op</text>
+                    <text x="135" y="55" class="port-out">f3</text>
+                    <text x="135" y="100" class="port-out">rs1</text>
+                    <text x="135" y="130" class="port-out">rs2</text>
+                    <text x="135" y="160" class="port-out">rd</text>
+                    <text x="135" y="80" class="port-out">f7</text>
+                </g>
+
+                <g transform="translate(580, 50)">
+                    <rect id="mod_alu_ctrl" width="180" height="120" class="module mod-control" rx="10" />
+                    <text x="90" y="65" class="title" style="fill:#ef6c00">ALU CONTROL</text>
+                    <text x="5" y="40" class="port-in" style="fill:#e65100">OpCode</text>
+                    <text x="5" y="75" class="port-in" style="fill:#e65100">fun3</text>
+                    <text x="5" y="105" class="port-in" style="fill:#e65100">fun7</text>
+                    <text x="175" y="25" class="port-out" style="fill:#e65100">alu_op</text>
+                    <text x="175" y="45" class="port-out" style="fill:#e65100">wer</text>
+                    <text x="175" y="65" class="port-out" style="fill:#e65100">wem</text>
+                </g>
+
+                <g transform="translate(580, 250)">
+                    <rect id="mod_banco_reg" width="160" height="220" class="module" />
+                    <text x="80" y="110" class="title">Banco Reg</text>
+                    <text x="5" y="40" class="port-in">a1</text>
+                    <text x="5" y="90" class="port-in">a2</text>
+                    <text x="5" y="140" class="port-in">we</text>
+                    <text x="5" y="180" class="port-in">ad</text>
+                    <text x="5" y="200" class="port-in">di</text>
+                    <text x="155" y="40" class="port-out">do1</text>
+                    <text x="155" y="150" class="port-out">do2</text>
+                </g>
+
+                <g transform="translate(300, 600)">
+                    <rect id="mod_mux_imm_type" width="120" height="80" class="module mod-mux" />
+                    <text x="55" y="45" class="title-mux">Mux Imm</text>
+                    <text x="5" y="25" class="port-in">IL</text>
+                    <text x="5" y="65" class="port-in">S</text>
+                    <text x="115" y="45" class="port-out">Part</text>
+                </g>
+
+                <g transform="translate(520, 600)">
+                    <rect id="mod_imm_gen" width="130" height="80" class="module" />
+                    <text x="65" y="45" class="title">Sign Ext</text>
+                    <text x="5" y="30" class="port-in">In2</text>
+                    <text x="5" y="60" class="port-in">In1</text>
+                    <text x="125" y="45" class="port-out">Ext</text>
+                </g>
+
+                <g transform="translate(300, 750)">
+                    <rect id="mod_ordenamiento" width="140" height="70" class="module mod-logic" />
+                    <text x="75" y="40" class="title" style="fill:#7b1fa2">Ordenamiento</text>
+                    <text x="120" y="25" class="port-in">P1</text>
+                    <text x="120" y="55" class="port-in">P2</text>
+                    <text x="20" y="40" class="port-out">Jmp</text>
+                </g>
+
+                <g transform="translate(800, 380)">
+                    <rect id="mod_mux_alu" width="70" height="90" class="module mod-mux" />
+                    <text x="35" y="45" class="title-mux">Mux</text>
+                    <text x="5" y="25" class="port-in">Reg</text>
+                    <text x="5" y="75" class="port-in">Imm</text>
+                    <text x="65" y="45" class="port-out">Out</text>
+                </g>
+
+                <g transform="translate(910, 260)">
+                    <rect id="mod_alu" width="130" height="150" class="module" />
+                    <text x="65" y="75" class="title" font-size="16">ALU</text>
+                    <text x="5" y="35" class="port-in">Op1</text>
+                    <text x="5" y="80" class="port-in">Alu_Op</text>
+                    <text x="5" y="135" class="port-in">Op2</text>
+                    <text x="125" y="85" class="port-out">Res</text>
+                </g>
+
+                <g transform="translate(1100, 250)">
+                    <rect id="mod_mem_data" width="140" height="180" class="module" />
+                    <text x="70" y="90" class="title">Mem Datos</text>
+                    <text x="5" y="30" class="port-in">Addr</text>
+                    <text x="5" y="60" class="port-in">Di</text>
+                    <text x="5" y="160" class="port-in">We</text>
+                    <text x="135" y="90" class="port-out">Do</text>
+                </g>
+
+                <g transform="translate(1300, 280)">
+                    <rect id="mod_mux_wb" width="90" height="100" class="module mod-mux" />
+                    <text x="45" y="55" class="title-mux">Mux WB</text>
+                    <text x="5" y="35" class="port-in">Alu</text>
+                    <text x="5" y="80" class="port-in">Mem</text>
+                    <text x="88" y="55" class="port-out">Out</text>
+                </g>
+
+                <g transform="translate(1000, 600)">
+                    <rect id="mod_uno_solo" width="120" height="60" class="module mod-logic" />
+                    <text x="60" y="35" class="title" style="fill:#7b1fa2">Uno Solo</text>
+                    <text x="5" y="35" class="port-in">Re</text>
+                    <text x="115" y="35" class="port-out">One</text>
+                </g>
+
+                <g transform="translate(1150, 590)">
+                    <rect id="mod_mux_br" width="90" height="80" class="module mod-mux" />
+                    <text x="40" y="45" class="title-mux">Mux Br</text>
+                    <text x="5" y="25" class="port-in">0</text>
+                    <text x="5" y="65" class="port-in">1</text>
+                    <text x="85" y="45" class="port-out">Out</text>
+                </g>
+
+
+                <polyline id="wire_pc_out_1" points="250,370 280,370 280,320 320,320" class="wire wire-bus"/>
+                <polyline id="wire_pc_plus_4" points="250,190 280,190 280,280 140,280 140,340 160,340" class="wire wire-bus"/>
+                <polyline id="wire_pc_out_2" points="160,220 140,220 140,260 110,260 110,460 260,460 260,370" class="wire wire-bus"/>
+                
+                <polyline id="wire_muxpc_to_adder" points="130,190 140,190 140,170 160,170" class="wire wire-bus"/>
+                <line x1="30" y1="175" x2="50" y2="175" class="wire" />
+
+                <polyline id="wire_branch_target" points="300,785 30,785 30,223 50,223" class="wire wire-bus"/>
+
+                <!--CABLES QUE CONECTAN LA MEMORIA DE INTRUCCIONES CON EL BANCO DE REGISTROS Y EL ALU-CONTROL-->
+                <polyline id="wire_opcode" points="460,280 485,280 485,90 580,90" class="wire wire-ctrl" />
+                <polyline id="wire_funct3" points="460,305 495,305 495,120 580,120" class="wire wire-ctrl" />
+                <polyline id="wire_funct7" points="460,330 505,330 505,150 580,150" class="wire wire-ctrl" />
+                <polyline id="wire_rs1" points="460,347 540,347 540,288 580,288" class="wire wire-bus" />
+                <polyline id="wire_rs2" points="460,377 550,377 550,335 580,335" class="wire wire-bus" />
+                <polyline id="wire_rd" points="460,410 540,410 540,427 580,427" class="wire wire-bus"/>
+
+                <polyline id="wire_ctrl_wer" points="760,95 800,95 800,210 560,210 560,388 580,388" class="wire" />
+                <polyline id="wire_ctrl_wem" points="760,115 1080,115 1080,408 1100,408" class="wire" />
+                <polyline id="wire_alu_ctrl_sig" points="760,73 890,73 890,338 910,338" class="wire wire-bus"/>
+
+                <!--<polyline points="460,440 540,440 540,560 345,560 345,600" class="wire wire-bus" /> -->
+                <!--<polyline points="540,560 540,770 440,770" class="wire wire-bus" /> -->
+                <!--<polyline points="460,440 540,440 540,560 570,560 570,600" class="wire wire-bus" /> -->
+
+                <polyline id="wire_imm_in_1" points="480,377 480,500 250,500 250,620 300,620" class="wire wire-bus" /> 
+                <polyline id="wire_s_in" points="500,410 500,520 270,520 270,660 300,660" class="wire wire-bus" />
+
+                <polyline id="wire_mux_to_gen" points="420,640 480,640 480,627 520,627" class="wire wire-bus" />
+                <polyline id="wire_imm_in_2" points="490,330 490,655 520,655" class="wire wire-bus" /> 
+
+                <polyline id="wire_imm_out" points="650,640 770,640 770,455 800,455" class="wire wire-bus" /> 
+                <polyline id="wire_data_rs1" points="740,290 910,290" class="wire wire-bus" /> 
+                <polyline id="wire_data_rs2" points="740,400 760,400 760,405 800,405" class="wire wire-bus" /> 
+                <polyline id="wire_mem_write_data" points="760,400 760,350 850,350 850,200 1055,200 1055,310 1100,310" class="wire wire-bus" /> 
+                <polyline id="wire_operand_b" points="870,425 890,425 890,393 910,393" class="wire wire-bus" /> 
+
+                <polyline id="wire_mem_addr" points="1040,345 1070,345 1070,280 1100,280" class="wire wire-bus" /> 
+            
+                <polyline id="wire_alu_to_uno" points="1070,530 1070,550 970,550 970,630 1000,630" class="wire wire-bus" />
+                <polyline id="wire_alu_result" points="1070,345 1070,530 1280,530 1280,315 1300,315" class="wire wire-bus" />  
+
+                <polyline id="wire_br_false" points="1120,635 1135,635 1135,615 1150,615" class="wire" />
+                
+                <polyline id="wire_br_true" points="1135,635 1135,655 1150,655" class="wire" />
+
+                <polyline id="wire_ord_in_1" points="470,410 470,770 440,770" class="wire wire-ctrl" />
+                <polyline id="wire_ord_in_2" points="505,300 510,300 510,800 440,800" class="wire wire-ctrl" />
+                <polyline id="wire_pc_src" points="1240,630 1250,630 1250,840 10,840 10,195 50,195" class="wire wire-ctrl" />
+
+                <polyline id="wire_mem_read_data" points="1240,340 1270,340 1270,365 1300,365" class="wire wire-bus" />
+                <polyline id="wire_write_back" points="1390,330 1400,330 1400,20 520,20 520,450 580,450" class="wire wire-bus" />
+
+            </svg>
+        </div>
+
+        <div class="memory-dashboard">
+            <div class="panel-section">
+                <h3>Banco de Registros</h3>
+                <div id="registerGrid" class="register-grid"></div>
+            </div>
+            <div class="panel-section">
+                <h3>Memoria de Datos</h3>
+                <div class="memory-list-wrapper">
+                    <table id="dataMemoryTable">
+                        <thead>
+                            <tr><th>Dir</th><th>Val (Dec)</th><th>Val (Hex)</th></tr>
+                        </thead>
+                        <tbody id="memoryBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="bitTooltip" class="tooltip"></div>
+    </div>
+
+    <script src="logica.js"></script>
+</body>
+</html>
