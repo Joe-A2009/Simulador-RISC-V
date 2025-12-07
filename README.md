@@ -5,7 +5,8 @@
 Un simulador web interactivo y **Didáctico** del Datapath de un procesador **RISC-V de Ciclo Único (32-bits)**. 
 
 Este proyecto fue diseñado para estudiantes y entusiastas de la Arquitectura de Computadoras, permitiendo visualizar en tiempo real cómo viajan los datos a través de los cables, cómo deciden los multiplexores y cómo se escriben los registros y la memoria RAM.
-
+Si quieres probar el simulador sin descargar nada puedes acceder al siguiente link para simular de manera gratuita:
+https://simulador-risc-v.vercel.app
 ---
 
 ## Características Principales
@@ -173,5 +174,6 @@ Desarrollado como proyecto final de Arquitectura de Computadoras.
 * **Lógica y Desarrollo:** Flores Canseco Joe Anthony, Vidals Sibaja Sinuhe, Peralta Segoviano Jairo Havith y Betanzo Bolaños Samantha
 
 * **Tecnologías:** HTML5, CSS3, JavaScript (Vanilla ES6).
+
 
 "El software nunca se termina, solo se libera."
