@@ -1,0 +1,16 @@
+addi x10, x0, 6
+addi x11, x0, 1
+addi x20, x0, 0
+sw x10, 0(x20)
+beq x10, x11, 44
+andi x5, x10, 1
+bne x5, x0, 12
+srli x10, x10, 1
+beq x0, x0, 16
+slli x6, x10, 1
+add x6, x6, x10
+addi x10, x6, 1
+addi x20, x20, 4
+sw x10, 0(x20)
+beq x0, x0, -40
+beq x0, x0, 0

@@ -1,0 +1,13 @@
+# Programa de prueba del Parser
+# Esto demuestra comentarios y formato flexible
+
+addi x1, x0, 10      # Inicializar x1 con 10
+addi x2, x0, 20      # Inicializar x2 con 20
+
+add  x3,  x1,  x2    # Muchos espacios y tabs entre operandos
+sw   x3, 4(x0)       # Guardar resultado (formato paréntesis)
+
+# Comentario en línea vacía (debe ignorarse)
+
+lw   x4, 4( x0 )     # Espacios dentro del paréntesis (el parser lo arregla)
+beq  x3, x4, 8       # Salto si son iguales
